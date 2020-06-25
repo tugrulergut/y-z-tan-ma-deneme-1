@@ -1,0 +1,88 @@
+const  myImage  =  belge . getElementById ( "image" ) ;
+const  localHost  =  "http://127.0.0.1:5500" ;
+
+Söz ver . hepsi ( [
+  // faceapi.nets.faceRecognitionNet.loadFromUri (localHost + "/ modeller")
+  faceapi . ağlar . faceRecognitionNet . loadFromUri ( " $ { localHost } / modeller` ) ,
+  faceapi . ağlar . faceLandmark68Net . loadFromUri ( " $ { localHost } / modeller` ) ,
+  faceapi . ağlar . ssdMobilenetv1 . loadFromUri ( " $ { localHost } / modeller` )
+] ) . sonra ( başla ) ;
+
+zaman uyumsuz  işlev  start ( )  {
+  belge . vücut . append ( "Tüm modeller Yüklendi .." ) ;
+
+  myImage . addEventListener ( "değiştir" , zaman  uyumsuz  ( )  =>  {
+    const  selectedImage  =  faceapi'yi bekliyor  . bufferToImage ( myImage . dosyaları [ 0 ] ) ;
+    belge . vücut . append ( selectedImage ) ;
+
+    const  algılama  =  faceapi bekliyor 
+      . DetectAllFaces ( selectedImage )
+      . withFaceLandmarks ( )
+      . withFaceDescriptors ( ) ;
+
+    const  displaySize  =  {
+      genişliği : SelectedImage . genişlik ,
+      Yükseklik : SelectedImage . yükseklik
+    } ;
+
+    const  resizedDetections  =  faceapi . resizeResults ( algılamalar ,  displaySize ) ;
+    konsol . log ( resizedDetections ) ;
+
+    const  canvas  =  faceapi . createCanvasFromMedia ( selectedImage ) ;
+    belge . vücut . ekleme ( tuval ) ;
+    faceapi . matchDimensions ( tuval ,  displaySize ) ;
+
+    // resizedDetections.forEach (d => {
+    // const kutusu = d.detection.box;
+    // const drawBox = yeni faceapi.draw.DrawBox (kutu, {label: "Kimdir Bu?"});
+    // drawBox.draw (tuval);
+    //});
+
+    const  results  =  resizedDetections . harita ( d  =>
+      faceMatcher . findBestMatch ( d . tanımlayıcı )
+    ) ;
+
+    sonuçları . forEach ( ( sonuç ,  i )  =>  {
+      const  box  =  resizedDetections [ i ] . algılama . kutu ;
+      const  drawBox  =  yeni  faceapi . çizin . DrawBox ( kutu ,  {
+        label : sonuç . toString ( )
+      } ) ;
+      drawBox . çizmek ( tuval ) ;
+    } ) ;
+  } ) ;
+
+  const  labelDescriptions  =  bekliyoruz  loadImages ( ) ;
+  const  faceMatcher  =  yeni  faceapi . FaceMatcher ( labelDescription ,  0.6 ) ;
+}
+
+zaman uyumsuz  işlev  loadImages ( )  {
+  sabit  etiketler  =  [
+    "satur",
+    "tolu",
+    "tugrul",
+    "mergen",
+    "pusat",
+    "sehan",
+    "ece",
+    "giray",
+  ] ;
+
+  dönmek  Promise . hepsi (
+    etiketler . harita (zaman uyumsuz  etiket  =>  {
+      const  açıklamaları  =  [ ] ;
+
+      for  ( let  i  =  1 ;  i <= 3 ;  i ++ )  {
+        const  image  =  faceapi'yi bekliyor  . fetchImage (
+          " $ { localHost } / kütüphane / $ { label } / $ { i } .jpg`
+        ) ;
+
+        const  algılama  =  faceapi bekliyor 
+          . tespit Tek Yüz ( resim )
+          . withFaceLandmarks ( )
+          . withFaceDescriptor ( ) ;
+        açıklamaları . push ( tespitler . tanımlayıcı ) ;
+      }
+       yeni  faceapi iade . LabeledFaceDescriptors ( etiket ,  açıklamalar ) ;
+    } )
+  ) ;
+}
